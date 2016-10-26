@@ -203,6 +203,8 @@ module.exports = {
     ];
   },
   plugins: [
+    // see http://stackoverflow.com/questions/25384360/how-to-prevent-moment-js-from-loading-locales-with-webpack
+    new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /en/),
     // Makes the public URL available as %PUBLIC_URL% in index.html, e.g.:
     // <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
     // In production, it will be an empty string unless you specify "homepage"

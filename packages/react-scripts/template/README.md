@@ -42,9 +42,13 @@ You can find the most recent version of this guide [here](https://github.com/fac
   - [Continuous Integration](#continuous-integration)
   - [Disabling jsdom](#disabling-jsdom)
   - [Experimental Snapshot Testing](#experimental-snapshot-testing)
+  - [Editor Integration](#editor-integration)
 - [Developing Components in Isolation](#developing-components-in-isolation)
+- [Making a Progressive Web App](#making-a-progressive-web-app)
 - [Deployment](#deployment)
+  - [Serving Apps with Client-Side Routing](#serving-apps-with-client-side-routing)
   - [Building for Relative Paths](#building-for-relative-paths)
+  - [Firebase](#firebase)
   - [GitHub Pages](#github-pages)
   - [Heroku](#heroku)
   - [Modulus](#modulus)
@@ -53,6 +57,8 @@ You can find the most recent version of this guide [here](https://github.com/fac
   - [S3 and CloudFront](#s3-and-cloudfront)
   - [Surge](#surge)
 - [Troubleshooting](#troubleshooting)
+  - [`npm test` hangs on macOS Sierra](#npm-test-hangs-on-macos-sierra)
+  - [`npm run build` silently fails](#npm-run-build-silently-fails)
 - [Something Missing?](#something-missing)
 
 ## Updating to New Releases
@@ -137,6 +143,8 @@ It correctly bundles React in production mode and optimizes the build for the be
 
 The build is minified and the filenames include the hashes.<br>
 Your app is ready to be deployed!
+
+See the section about [deployment](#deployment) for more information.
 
 ### `npm run eject`
 
@@ -808,7 +816,11 @@ Note that tests run much slower with coverage so it is recommended to run it sep
 
 ### Continuous Integration
 
-By default `npm test` runs the watcher with interactive CLI. However, you can force it to run tests once and finish the process by setting an environment variable called `CI`. Popular CI servers already set it by default but you can do this yourself too:
+By default `npm test` runs the watcher with interactive CLI. However, you can force it to run tests once and finish the process by setting an environment variable called `CI`.
+
+When creating a build of your application with `npm run build` linter warnings are not checked by default. Like `npm test`, you can force the build to perform a linter warning check by setting the environment variable `CI`. If any warnings are encountered then the build fails.
+
+Popular CI servers already set the environment variable `CI` by default but you can do this yourself too:
 
 ### On CI servers
 #### Travis CI
@@ -825,6 +837,7 @@ cache:
     - node_modules
 script:
   - npm test
+  - npm run build
 ```
 1. Trigger your first build with a git push.
 1. [Customize your Travis CI Build](https://docs.travis-ci.com/user/customizing-the-build/) if needed.
@@ -836,6 +849,10 @@ script:
 set CI=true&&npm test
 ```
 
+```cmd
+set CI=true&&npm run build
+```
+
 (Note: the lack of whitespace is intentional.)
 
 ##### Linux, OS X (Bash)
@@ -844,9 +861,15 @@ set CI=true&&npm test
 CI=true npm test
 ```
 
-This way Jest will run tests once instead of launching the watcher.
+```bash
+CI=true npm run build
+```
 
-If you find yourself doing this often in development, please [file an issue](https://github.com/facebookincubator/create-react-app/issues/new) to tell us about your use case because we want to make watcher the best experience and are open to changing how it works to accommodate more workflows.
+The test command will force Jest to run tests once instead of launching the watcher.
+
+>  If you find yourself doing this often in development, please [file an issue](https://github.com/facebookincubator/create-react-app/issues/new) to tell us about your use case because we want to make watcher the best experience and are open to changing how it works to accommodate more workflows.
+
+The build command will check for linter warnings and fail if any are found.
 
 ### Disabling jsdom
 
@@ -881,9 +904,15 @@ Snapshot testing is a new feature of Jest that automatically generates text snap
 
 This feature is experimental and still [has major usage issues](https://github.com/facebookincubator/create-react-app/issues/372) so we only encourage you to use it if you like experimental technology. We intend to gradually improve it over time and eventually offer it as the default solution for testing React components, but this will take time. [Read more about snapshot testing.](http://facebook.github.io/jest/blog/2016/07/27/jest-14.html)
 
+### Editor Integration
+
+If you use [Visual Studio Code](https://code.visualstudio.com), there is a [Jest extension](https://github.com/orta/vscode-jest) which works with Create React App out of the box. This provides a lot of IDE-like features while using a text editor: showing the status of a test run with potential fail messages inline, starting and stopping the watcher automatically, and offering one-click snapshot updates. 
+
+![VS Code Jest Preview](https://cloud.githubusercontent.com/assets/49038/20795349/a032308a-b7c8-11e6-9b34-7eeac781003f.png)
+
 ## Developing Components in Isolation
 
-Usually, in an app, you have a lot of UI components, and each of them has many different states. 
+Usually, in an app, you have a lot of UI components, and each of them has many different states.
 For an example, a simple button component could have following states:
 
 * With a text label.
@@ -921,9 +950,57 @@ Learn more about React Storybook:
 * [Documentation](https://getstorybook.io/docs)
 * [Snapshot Testing](https://github.com/kadirahq/storyshots) with React Storybook
 
+## Making a Progressive Web App
+
+You can turn your React app into a [Progressive Web App](https://developers.google.com/web/progressive-web-apps/) by following the steps in [this repository](https://github.com/jeffposnick/create-react-pwa).
+
 ## Deployment
 
-## Building for Relative Paths
+`npm run build` creates a `build` directory with a production build of your app. Set up your favourite HTTP server so that a visitor to your site is served `index.html`, and requests to static paths like `/static/js/main.<hash>.js` are served with the contents of the `/static/js/main.<hash>.js` file. For example, Python contains a built-in HTTP server that can serve static files:
+
+```sh
+cd build
+python -m SimpleHTTPServer 9000
+```
+
+If you're using [Node](https://nodejs.org/) and [Express](http://expressjs.com/) as a server, it might look like this:
+
+```javascript
+const express = require('express');
+const path = require('path');
+const app = express();
+
+app.use(express.static('./build'));
+
+app.get('/', function (req, res) {
+  res.sendFile(path.join(__dirname, './build', 'index.html'));
+});
+
+app.listen(9000);
+```
+
+Create React App is not opinionated about your choice of web server. Any static file server will do. The `build` folder with static assets is the only output produced by Create React App.
+
+However this is not quite enough if you use client-side routing. Read the next section if you want to support URLs like `/todos/42` in your single-page app.
+
+### Serving Apps with Client-Side Routing
+
+If you use routers that use the HTML5 [`pushState` history API](https://developer.mozilla.org/en-US/docs/Web/API/History_API#Adding_and_modifying_history_entries) under the hood (for example, [React Router](https://github.com/ReactTraining/react-router) with `browserHistory`), many static file servers will fail. For example, if you used React Router with a route for `/todos/42`, the development server will respond to `localhost:3000/todos/42` properly, but an Express serving a production build as above will not.
+
+This is because when there is a fresh page load for a `/todos/42`, the server looks for the file `build/todos/42` and does not find it. The server needs to be configured to respond to a request to `/todos/42` by serving `index.html`. For example, we can amend our Express example above to serve `index.html` for any unknown paths:
+
+```diff
+ app.use(express.static('./build'));
+
+-app.get('/', function (req, res) {
++app.get('/*', function (req, res) {
+   res.sendFile(path.join(__dirname, './build', 'index.html'));
+ });
+```
+
+Now requests to `/todos/42` will be handled correctly both in development and in production.
+
+### Building for Relative Paths
 
 By default, Create React App produces a build assuming your app is hosted at the server root.<br>
 To override this, specify the `homepage` in your `package.json`, for example:
@@ -934,14 +1011,76 @@ To override this, specify the `homepage` in your `package.json`, for example:
 
 This will let Create React App correctly infer the root path to use in the generated HTML file.
 
+
+### Firebase
+
+Install the Firebase CLI if you haven't already by running `npm install -g firebase-tools`. Sign up for a [Firebase account](https://console.firebase.google.com/) and create a new project. Run `firebase login` and login with your previous created Firebase account.
+
+Then run the `firebase init` command from your project's root. You need to choose the **Hosting: Configure and deploy Firebase Hosting sites** and choose the Firebase project you created in the previous step. You will need to agree with `database.rules.json` being created, choose `build` as the public directory, and also agree to **Configure as a single-page app** by replying with `y`.
+
+```sh
+    === Project Setup
+
+    First, let's associate this project directory with a Firebase project.
+    You can create multiple project aliases by running firebase use --add,
+    but for now we'll just set up a default project.
+
+    ? What Firebase project do you want to associate as default? Example app (example-app-fd690)
+
+    === Database Setup
+
+    Firebase Realtime Database Rules allow you to define how your data should be
+    structured and when your data can be read from and written to.
+
+    ? What file should be used for Database Rules? database.rules.json
+    ✔  Database Rules for example-app-fd690 have been downloaded to database.rules.json.
+    Future modifications to database.rules.json will update Database Rules when you run
+    firebase deploy.
+
+    === Hosting Setup
+
+    Your public directory is the folder (relative to your project directory) that
+    will contain Hosting assets to uploaded with firebase deploy. If you
+    have a build process for your assets, use your build's output directory.
+
+    ? What do you want to use as your public directory? build
+    ? Configure as a single-page app (rewrite all urls to /index.html)? Yes
+    ✔  Wrote build/index.html
+
+    i  Writing configuration info to firebase.json...
+    i  Writing project information to .firebaserc...
+
+    ✔  Firebase initialization complete!
+```
+
+Now, after you create a production build with `npm run build`, you can deploy it by running `firebase deploy`.
+
+```sh
+    === Deploying to 'example-app-fd690'...
+
+    i  deploying database, hosting
+    ✔  database: rules ready to deploy.
+    i  hosting: preparing build directory for upload...
+    Uploading: [==============================          ] 75%✔  hosting: build folder uploaded successfully
+    ✔  hosting: 8 files uploaded successfully
+    i  starting release process (may take several minutes)...
+
+    ✔  Deploy complete!
+
+    Project Console: https://console.firebase.google.com/project/example-app-fd690/overview
+    Hosting URL: https://example-app-fd690.firebaseapp.com
+```
+
+For more information see [Add Firebase to your JavaScript Project](https://firebase.google.com/docs/web/setup).
+
 ### GitHub Pages
 
 >Note: this feature is available with `react-scripts@0.2.0` and higher.
 
 #### Step 1: Add `homepage` to `package.json`
 
-**The below step is important!**<br>
-**If your skip it, your app will not deploy correctly.**
+**The step below is important!**<br>
+**If you skip it, your app will not deploy correctly.**
 
 Open your `package.json` and add a `homepage` field:
 
@@ -1090,6 +1229,10 @@ You can find [other installation methods](https://facebook.github.io/watchman/do
 If this still doesn't help, try running `launchctl unload -F ~/Library/LaunchAgents/com.github.facebook.watchman.plist`.
 
 There are also reports that *uninstalling* Watchman fixes the issue. So if nothing else helps, remove it from your system and try again.
+
+### `npm run build` silently fails
+
+It is reported that `npm run build` can fail on machines with no swap space, which is common in cloud environments. If [the symptoms are matching](https://github.com/facebookincubator/create-react-app/issues/1133#issuecomment-264612171), consider adding some swap space to the machine you’re building on, or build the project locally.
 
 ## Something Missing?
 

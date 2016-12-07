@@ -56,7 +56,7 @@ root_path=$PWD
 if [ "$USE_YARN" = "yes" ]
 then
   # Install Yarn so that the test can use it to install packages.
-  npm install -g yarn
+  npm install -g yarn@0.17.10 # TODO: remove version when https://github.com/yarnpkg/yarn/issues/2142 is fixed.
   yarn cache clean
 fi
 
@@ -76,6 +76,7 @@ npm run build
 test -e build/*.html
 test -e build/static/js/*.js
 test -e build/static/css/*.css
+test -e build/static/media/*.svg
 test -e build/favicon.ico
 
 # Run tests with CI flag
@@ -140,6 +141,7 @@ npm run build
 test -e build/*.html
 test -e build/static/js/*.js
 test -e build/static/css/*.css
+test -e build/static/media/*.svg
 test -e build/favicon.ico
 
 # Run tests with CI flag
@@ -169,6 +171,7 @@ npm run build
 test -e build/*.html
 test -e build/static/js/*.js
 test -e build/static/css/*.css
+test -e build/static/media/*.svg
 test -e build/favicon.ico
 
 # Run tests, overring the watch option to disable it.

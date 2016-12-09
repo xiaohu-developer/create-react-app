@@ -148,7 +148,7 @@ module.exports = {
         ],
         loader: 'url',
         query: {
-          limit: 10000,
+          limit: 100,
           name: 'static/media/[name].[hash:8].[ext]'
         }
       },

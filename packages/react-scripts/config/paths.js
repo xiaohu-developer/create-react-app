@@ -56,7 +56,7 @@ function resolveOwn(relativePath) {
 }
 
 // config before eject: we're in ./node_modules/react-scripts/config/
-module.exports = {
+const defaultExports = {
   appBuild: resolveApp('build'),
   appPublic: resolveApp('public'),
   appHtml: resolveApp('public/index.html'),
@@ -70,6 +70,28 @@ module.exports = {
   ownNodeModules: resolveOwn('../node_modules'),
   nodePaths: nodePaths
 };
+
+const APPNAME = process.env.APPNAME;
+console.log("APPNAME: ", APPNAME);
+
+if(APPNAME === 'SPARTA'){
+  module.exports = Object.assign({}, defaultExports, {
+    appIndexJs: resolveApp('src/bootSparta.js'),
+    appBuild: resolveApp('build/sparta'),
+    appPublic: resolveApp('public/sparta'),
+    appHtml: resolveApp('public/sparta/index.html')
+  });
+} else if (APPNAME === 'YUNDUAN'){
+  module.exports = Object.assign({}, defaultExports, {
+    appIndexJs: resolveApp('src/bootYunduan.js'),
+    appBuild: resolveApp('build/yunduan'),
+    appPublic: resolveApp('public/yunduan'),
+    appHtml: resolveApp('public/yunduan/index.html')
+  });
+} else {
+  module.exports = defaultExports;
+}
+
 
 // config before publish: we're in ./packages/react-scripts/config/
 if (__dirname.indexOf(path.join('packages', 'react-scripts', 'config')) !== -1) {

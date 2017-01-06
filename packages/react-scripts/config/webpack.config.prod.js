@@ -152,6 +152,16 @@ module.exports = {
           name: 'static/media/[name].[hash:8].[ext]'
         }
       },
+      {
+        test: /\.(js|jsx)$/,
+        include: paths.appSrc,
+        loader: 'string-replace',
+        query: {
+          search: 'delete start(.|\n)+?delete end',
+          replace: 'deleted',
+          flags: 'gm'
+        }
+      },
       // Process JS with Babel.
       {
         test: /\.(js|jsx)$/,

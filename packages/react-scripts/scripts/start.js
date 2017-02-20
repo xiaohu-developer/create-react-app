@@ -29,11 +29,11 @@ var formatWebpackMessages = require('react-dev-utils/formatWebpackMessages');
 var getProcessForPort = require('react-dev-utils/getProcessForPort');
 var openBrowser = require('react-dev-utils/openBrowser');
 var prompt = require('react-dev-utils/prompt');
-var pathExists = require('path-exists');
+var fs = require('fs');
 var config = require('../config/webpack.config.dev');
 var paths = require('../config/paths');
 
-var useYarn = pathExists.sync(paths.yarnLockFile);
+var useYarn = fs.existsSync(paths.yarnLockFile);
 var cli = useYarn ? 'yarn' : 'npm';
 var isInteractive = process.stdout.isTTY;
 
@@ -43,7 +43,7 @@ if (!checkRequiredFiles([paths.appHtml, paths.appIndexJs])) {
 }
 
 // Tools like Cloud9 rely on this.
-var DEFAULT_PORT = process.env.PORT || 3000;
+var DEFAULT_PORT = parseInt(process.env.PORT, 10) || 3000;
 var compiler;
 var handleCompile;
 
@@ -205,6 +205,14 @@ function addMiddleware(devServer) {
     var hpm = httpProxyMiddleware(pathname => mayProxy.test(pathname), {
       target: proxy,
       logLevel: 'silent',
+      onProxyReq: function(proxyReq, req, res) {
+        // Browers may send Origin headers even with same-origin
+        // requests. To prevent CORS issues, we have to change
+        // the Origin to match the target URL.
+        if (proxyReq.getHeader('origin')) {
+          proxyReq.setHeader('origin', proxy);
+        }
+      },
       onError: onProxyError(proxy),
       secure: false,
       changeOrigin: true,
@@ -237,7 +245,7 @@ function runDevServer(host, port, protocol) {
     // project directory is dangerous because we may expose sensitive files.
     // Instead, we establish a convention that only files in `public` directory
     // get served. Our build script will copy `public` into the `build` folder.
-    // In `index.html`, you can get URL of `public` folder with %PUBLIC_PATH%:
+    // In `index.html`, you can get URL of `public` folder with %PUBLIC_URL%:
     // <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
     // In JavaScript code, you can access it with `process.env.PUBLIC_URL`.
     // Note that we only recommend to use `public` folder as an escape hatch
@@ -245,6 +253,8 @@ function runDevServer(host, port, protocol) {
     // for some reason broken when imported through Webpack. If you just want to
     // use an image, put it in `src` and `import` it from JavaScript instead.
     contentBase: paths.appPublic,
+    // By default files from `contentBase` will not trigger a page reload.
+    watchContentBase: true,
     // Enable hot reloading server. It will provide /sockjs-node/ endpoint
     // for the WebpackDevServer client so it can learn when the files were
     // updated. The WebpackDevServer client is included as an entry point
@@ -264,7 +274,8 @@ function runDevServer(host, port, protocol) {
     },
     // Enable HTTPS if the HTTPS environment variable is set to 'true'
     https: protocol === "https",
-    host: host
+    host: host,
+    overlay: false,
   });
 
   // Our custom middleware proxies requests to /index.html or a remote API.
@@ -282,9 +293,7 @@ function runDevServer(host, port, protocol) {
     console.log(chalk.cyan('Starting the development server...'));
     console.log();
 
-    if (isInteractive) {
-      openBrowser(protocol + '://' + host + ':' + port + '/');
-    }
+    openBrowser(protocol + '://' + host + ':' + port + '/');
   });
 }
 

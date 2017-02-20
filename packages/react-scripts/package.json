@@ -1,6 +1,6 @@
 {
   "name": "xiaohu-react-scripts",
-  "version": "0.9.1-1",
+  "version": "0.9.1-2",
   "description": "Configuration and scripts for Create React App.",
   "repository": "facebookincubator/create-react-app",
   "license": "BSD-3-Clause",
@@ -64,7 +64,6 @@
     "webpack-dev-server": "2.3.0",
     "webpack-manifest-plugin": "1.1.0",
     "whatwg-fetch": "2.0.2",
-    "offline-plugin": "^3.4.2",
     "string-replace-loader": "^1.0.5"
   },
   "devDependencies": {

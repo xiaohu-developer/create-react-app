@@ -30,7 +30,9 @@ const plugins = [
     regenerator: true,
     // Resolve the Babel runtime relative to the config.
     moduleName: path.dirname(require.resolve('babel-runtime/package'))
-  }]
+  }],
+  // Enables parsing of import()
+  require.resolve('babel-plugin-syntax-dynamic-import')
 ];
 
 // This is similar to how `env` works in Babel:
@@ -88,7 +90,11 @@ if (env === 'test') {
   module.exports = {
     presets: [
       // Latest stable ECMAScript features
-      require.resolve('babel-preset-latest'),
+      [require.resolve('babel-preset-latest'), {
+        'es2015': {
+          modules: false
+        }
+      }],
       // JSX, Flow
       require.resolve('babel-preset-react')
     ],

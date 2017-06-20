@@ -63,7 +63,7 @@ module.exports = {
   bail: true,
   // We generate sourcemaps in production. This is slow but gives good results.
   // You can exclude the *.map files from the build during deployment.
-  devtool: 'source-map',
+  devtool: 'hidden-source-map',
   // In production, we only want to load the polyfills and the app code.
   entry: [
     require.resolve('./polyfills'),
@@ -135,7 +135,7 @@ module.exports = {
         ],
         loader: 'url',
         query: {
-          limit: 10000,
+          limit: 100,
           name: 'static/media/[name].[hash:8].[ext]'
         }
       },
@@ -213,6 +213,8 @@ module.exports = {
     ];
   },
   plugins: [
+    // see http://stackoverflow.com/questions/25384360/how-to-prevent-moment-js-from-loading-locales-with-webpack
+    new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /en/),
     // Makes some environment variables available in index.html.
     // The public URL is available as %PUBLIC_URL% in index.html, e.g.:
     // <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">

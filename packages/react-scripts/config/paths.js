@@ -140,3 +140,22 @@ if (!reactScriptsLinked && __dirname.indexOf(path.join('packages', 'react-script
   };
 }
 // @remove-on-eject-end
+const APPNAME = process.env.APPNAME;
+
+const XIAOHU_APP_INDEX_JS = process.env.XIAOHU_APP_INDEX_JS;
+const XIAOHU_APP_BUILD = process.env.XIAOHU_APP_BUILD;
+const XIAOHU_APP_PUBLIC = process.env.XIAOHU_APP_PUBLIC;
+const XIAOHU_APP_HTML = process.env.XIAOHU_APP_HTML;
+
+console.log("APPNAME: ", APPNAME);
+console.log("XIAOHU_APP_INDEX_JS: ", XIAOHU_APP_INDEX_JS);
+console.log("XIAOHU_APP_BUILD: ", XIAOHU_APP_BUILD);
+console.log("XIAOHU_APP_PUBLIC: ", XIAOHU_APP_PUBLIC);
+console.log("XIAOHU_APP_HTML: ", XIAOHU_APP_HTML);
+
+Object.assign(module.exports, {
+  appIndexJs: resolveApp(XIAOHU_APP_INDEX_JS),
+  appBuild: resolveApp(XIAOHU_APP_BUILD),
+  appPublic: resolveApp(XIAOHU_APP_PUBLIC),
+  appHtml: resolveApp(XIAOHU_APP_HTML)
+});

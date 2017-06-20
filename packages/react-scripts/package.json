@@ -1,6 +1,6 @@
 {
-  "name": "react-scripts",
-  "version": "0.9.4",
+  "name": "xiaohu-react-scripts",
+  "version": "0.9.5-3",
   "description": "Configuration and scripts for Create React App.",
   "repository": "facebookincubator/create-react-app",
   "license": "BSD-3-Clause",
